@@ -16,7 +16,9 @@ in
       autoFormat = true;
       neededForBoot = true;
     };
+    networking.hosts."127.0.0.1" = [ "ntp.nixos.kz" ];
     networking.hosts."127.0.0.2" = [ "cache.nixos.org" ];
+    services.chrony.extraConfig = "local stratum 10";
     services.nginx.virtualHosts."cache.nixos.org" = {
       listen = [{ addr = "127.0.0.2"; port = 443; ssl = true; }];
       addSSL = true;
@@ -52,6 +54,11 @@ in
         server.succeed(curl + "-I https://nixos.kz | grep -i '^strict-transport-security: max-age=31536000'")
         server.fail(f"curl -s -H 'Host: evil.com' http://{ip}/")
         server.succeed(f"curl -s -o /dev/null -w '%{{redirect_url}}' -H 'Host: nixos.kz' http://{ip}/ | grep -x https://nixos.kz/")
+
+    with subtest("ntp"):
+        q = "chronyd -Q -t 30 'pidfile /run/q.pid' 'ntstrustedcerts /var/lib/acme/.minica/cert.pem' "
+        server.wait_until_succeeds(q + "'server ntp.nixos.kz iburst maxsamples 1'", timeout=120)
+        server.succeed(q + "'server ntp.nixos.kz iburst nts maxsamples 1'")
 
     with subtest("root has restricted deploy access"):
         server.succeed("ssh root@localhost 'touch /root/ok'")

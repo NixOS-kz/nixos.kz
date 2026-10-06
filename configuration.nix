@@ -4,6 +4,7 @@
     ./access.nix
     ./impermanence.nix
     ./nginx.nix
+    ./ntp.nix
   ];
 
   boot.kernel.sysctl = {
