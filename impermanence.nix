@@ -6,7 +6,7 @@
   };
 
   environment.persistence."/nix/persist" = {
-    directories = [ "/var/lib/acme" "/var/lib/nixos" "/var/lib/systemd/timers" "/var/log" ];
+    directories = [ "/var/lib/acme" "/var/lib/chrony" "/var/lib/nixos" "/var/lib/systemd/timers" "/var/log" ];
     files = [ "/etc/machine-id" ];
   };
 }
