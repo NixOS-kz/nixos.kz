@@ -7,7 +7,15 @@
   services.nginx = {
     enable = true;
     serverTokens = false;
-    commonHttpConfig = "access_log syslog:server=unix:/dev/log;";
+    commonHttpConfig = ''
+      access_log syslog:server=unix:/dev/log;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    '';
+    virtualHosts."_" = {
+      default = true;
+      rejectSSL = true;
+      locations."/".return = "444";
+    };
     virtualHosts."nixos.kz" = {
       forceSSL = true;
       enableACME = true;

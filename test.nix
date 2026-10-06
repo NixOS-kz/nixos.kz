@@ -51,6 +51,9 @@ in
         internet.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/ | grep -x 404")
         internet.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/evil | grep -x 404")
         internet.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' https://cache.nixos.kz/nix-cache-info | grep -x 403")
+        internet.succeed(curl + "-I https://nixos.kz | grep -i '^strict-transport-security: max-age=31536000'")
+        internet.fail(f"curl -s -H 'Host: evil.com' http://{ip}/")
+        internet.succeed(f"curl -s -o /dev/null -w '%{{redirect_url}}' -H 'Host: nixos.kz' http://{ip}/ | grep -x https://nixos.kz/")
 
     internet.succeed("install -m600 ${keys.snakeOilPrivateKey} /root/key")
 
