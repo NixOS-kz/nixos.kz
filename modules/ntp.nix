@@ -1,14 +1,24 @@
-let
-  cert = "/var/lib/acme/ntp.nixos.kz";
-  webroot = "/var/lib/acme/acme-challenge";
-in
 {
-  services.nginx.virtualHosts."ntp.nixos.kz".locations."/.well-known/acme-challenge/".root = webroot;
+  services.nginx.virtualHosts."ntp.nixos.kz" = {
+    forceSSL = true;
+    enableACME = true;
+    locations."= /".extraConfig = ''
+      default_type text/plain;
+      return 200 "NTP and NTS server\n\nserver ntp.nixos.kz iburst nts\n";
+    '';
+    locations."/".return = "404";
+  };
 
-  security.acme.certs."ntp.nixos.kz" = {
-    inherit webroot;
+  security.acme.certs.nts = {
+    domain = "ntp.nixos.kz";
+    webroot = "/var/lib/acme/acme-challenge";
     group = "chrony";
     reloadServices = [ "chronyd" ];
+  };
+
+  systemd.services.chronyd = {
+    wants = [ "acme-nts.service" ];
+    after = [ "acme-nts.service" ];
   };
 
   services.chrony = {
@@ -18,8 +28,8 @@ in
       allow
       ratelimit interval 1 burst 16
       ntsratelimit interval 1 burst 16
-      ntsserverkey ${cert}/key.pem
-      ntsservercert ${cert}/fullchain.pem
+      ntsserverkey /var/lib/acme/nts/key.pem
+      ntsservercert /var/lib/acme/nts/fullchain.pem
       ntsdumpdir /var/lib/chrony
     '';
   };

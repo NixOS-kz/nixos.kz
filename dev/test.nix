@@ -42,13 +42,14 @@ in
     server.wait_for_unit("sshd.service")
 
     ip = "127.0.0.1"
-    curl = f"curl -sk --resolve nixos.kz:443:{ip} --resolve cache.nixos.kz:443:{ip} "
+    curl = f"curl -sk --resolve nixos.kz:443:{ip} --resolve cache.nixos.kz:443:{ip} --resolve ntp.nixos.kz:443:{ip} "
 
     with subtest("nginx"):
-        server.succeed(curl + "-o /dev/null -w '%{redirect_url}' https://nixos.kz | grep -x https://t.me/NixOSkz")
+        server.succeed(curl + "https://nixos.kz | grep -F https://t.me/NixOSkz")
+        server.succeed(curl + "https://ntp.nixos.kz | grep -x 'server ntp.nixos.kz iburst nts'")
         server.succeed(curl + "https://cache.nixos.kz/nix-cache-info | grep StoreDir")
         server.succeed(curl + "https://cache.nixos.kz/00000000000000000000000000000000.narinfo | grep StoreDir")
-        server.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/ | grep -x 404")
+        server.succeed(curl + "https://cache.nixos.kz/ | grep -x 'extra-substituters = https://cache.nixos.kz'")
         server.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/evil | grep -x 404")
         server.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' https://cache.nixos.kz/nix-cache-info | grep -x 403")
         server.succeed(curl + "-I https://nixos.kz | grep -i '^strict-transport-security: max-age=31536000'")
