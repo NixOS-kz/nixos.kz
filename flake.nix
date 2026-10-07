@@ -39,6 +39,8 @@
         vm = self.nixosConfigurations.nixos-kz.config.system.build.vm;
       };
 
+      packages.x86_64-linux.site = pkgs.callPackage ./site { };
+
       checks.x86_64-linux.vm = pkgs.testers.runNixOSTest (import ./dev/test.nix { inherit pkgs modules hashPaths; });
 
       formatter.x86_64-linux = pkgs.nixpkgs-fmt;
