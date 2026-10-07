@@ -1,10 +1,10 @@
 { pkgs, ... }:
 {
   imports = [
-    ./access.nix
-    ./impermanence.nix
-    ./nginx.nix
-    ./ntp.nix
+    ../modules/access.nix
+    ../modules/impermanence.nix
+    ../modules/nginx.nix
+    ../modules/ntp.nix
   ];
 
   boot.kernel.sysctl = {

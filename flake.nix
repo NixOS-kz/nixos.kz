@@ -12,7 +12,7 @@
       hashPaths = ''while read -r p; do echo "$p $(nix --extra-experimental-features nix-command hash path "$p")"; done'';
       modules = [
         impermanence.nixosModules.impermanence
-        ./configuration.nix
+        ./host/configuration.nix
         {
           environment.etc."nixos-revision".text = ''
             commit: ${self.rev or self.dirtyRev or "unknown"}
@@ -26,20 +26,20 @@
       nixosConfigurations.nixos-kz = nixpkgs.lib.nixosSystem {
         modules = modules ++ [
           disko.nixosModules.disko
-          ./disko.nix
-          ./hardware-configuration.nix
-          ./network.nix
+          ./host/disko.nix
+          ./host/hardware-configuration.nix
+          ./host/network.nix
           ./members.nix
-          { virtualisation.vmVariant.imports = [ ./vm.nix ]; }
+          { virtualisation.vmVariant.imports = [ ./dev/vm.nix ]; }
         ];
       };
 
-      apps.x86_64-linux = import ./apps.nix {
+      apps.x86_64-linux = import ./dev/apps.nix {
         inherit pkgs hashPaths;
         vm = self.nixosConfigurations.nixos-kz.config.system.build.vm;
       };
 
-      checks.x86_64-linux.vm = pkgs.testers.runNixOSTest (import ./test.nix { inherit pkgs modules hashPaths; });
+      checks.x86_64-linux.vm = pkgs.testers.runNixOSTest (import ./dev/test.nix { inherit pkgs modules hashPaths; });
 
       formatter.x86_64-linux = pkgs.nixpkgs-fmt;
     };
