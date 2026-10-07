@@ -24,6 +24,11 @@
     enable = true;
     servers = [ "kz.pool.ntp.org" ];
     extraConfig = ''
+      server time.cloudflare.com iburst nts
+      server nts.netnod.se iburst nts
+      server ptbtime1.ptb.de iburst nts
+      server nts.time.nl iburst nts
+      minsources 2
       allow
       ratelimit interval 1 burst 16
       ntsratelimit interval 1 burst 16
