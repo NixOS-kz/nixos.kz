@@ -1,6 +1,6 @@
 # ntp.nixos.kz
 
-NTP and NTS server synced to kz.pool.ntp.org.
+NTP and NTS server synced over NTS to Cloudflare, Netnod, PTB and time.nl, and to kz.pool.ntp.org.
 
 ```nix
 services.chrony = {
