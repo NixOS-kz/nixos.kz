@@ -6,7 +6,7 @@ Members log in as their GitHub handle: read-only sandbox, lowest CPU and IO prio
 
 ```sh
 nix flake check   # VM test
-nix build .#site  # nixos.kz page from site/index.md
+nix build .#site  # pages from modules/site/*.md
 nix run .#vm      # the server in a rootless netns, Ctrl-a x quits
 nix run .#enter   # shell in that netns: ssh root@nixos.kz, curl -k https://nixos.kz
 nix run .#verify -- you@nixos.kz   # the server runs main, closure untampered
