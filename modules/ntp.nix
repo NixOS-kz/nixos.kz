@@ -1,11 +1,10 @@
+{ pkgs, ... }:
 {
   services.nginx.virtualHosts."ntp.nixos.kz" = {
     forceSSL = true;
     enableACME = true;
-    locations."= /".extraConfig = ''
-      default_type text/plain;
-      return 200 "NTP and NTS server\n\nserver ntp.nixos.kz iburst nts\n";
-    '';
+    root = pkgs.callPackage ../site { };
+    locations."= /".tryFiles = "/ntp.html =404";
     locations."/".return = "404";
   };
 

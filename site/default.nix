@@ -1,5 +1,7 @@
 { runCommand, pandoc }:
 runCommand "site" { nativeBuildInputs = [ pandoc ]; } ''
   mkdir $out
-  pandoc -s -M pagetitle=NixOS.kz -M lang=en ${./index.md} -o $out/index.html
+  for f in ${./.}/*.md; do
+    pandoc -s --shift-heading-level-by=-1 -M lang=en "$f" -o $out/$(basename "$f" .md).html
+  done
 ''

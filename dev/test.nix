@@ -46,10 +46,10 @@ in
 
     with subtest("nginx"):
         server.succeed(curl + "https://nixos.kz | grep -F https://t.me/NixOSkz")
-        server.succeed(curl + "https://ntp.nixos.kz | grep -x 'server ntp.nixos.kz iburst nts'")
+        server.succeed(curl + "https://ntp.nixos.kz | grep -F 'ntp.nixos.kz</h1>'")
         server.succeed(curl + "https://cache.nixos.kz/nix-cache-info | grep StoreDir")
         server.succeed(curl + "https://cache.nixos.kz/00000000000000000000000000000000.narinfo | grep StoreDir")
-        server.succeed(curl + "https://cache.nixos.kz/ | grep -x 'extra-substituters = https://cache.nixos.kz'")
+        server.succeed(curl + "https://cache.nixos.kz/ | grep -F 'substituters = https://cache.nixos.kz'")
         server.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/evil | grep -x 404")
         server.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' https://cache.nixos.kz/nix-cache-info | grep -x 403")
         server.succeed(curl + "-I https://nixos.kz | grep -i '^strict-transport-security: max-age=31536000'")

@@ -27,10 +27,8 @@
       forceSSL = true;
       enableACME = true;
       locations."/".return = "404";
-      locations."= /".extraConfig = ''
-        default_type text/plain;
-        return 200 "cache.nixos.org proxy\n\nextra-substituters = https://cache.nixos.kz\n";
-      '';
+      root = pkgs.callPackage ../site { };
+      locations."= /".tryFiles = "/cache.html =404";
       locations."~ ^/(nix-cache-info$|[a-z0-9]+\\.narinfo$|nar/)" = {
         proxyPass = "https://cache.nixos.org";
         extraConfig = ''
