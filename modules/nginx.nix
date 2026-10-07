@@ -1,3 +1,4 @@
+{ pkgs, ... }:
 {
   security.acme = {
     acceptTerms = true;
@@ -20,12 +21,16 @@
       forceSSL = true;
       enableACME = true;
       serverAliases = [ "www.nixos.kz" ];
-      locations."/".return = "301 https://t.me/NixOSkz";
+      root = pkgs.callPackage ../site { };
     };
     virtualHosts."cache.nixos.kz" = {
       forceSSL = true;
       enableACME = true;
       locations."/".return = "404";
+      locations."= /".extraConfig = ''
+        default_type text/plain;
+        return 200 "cache.nixos.org proxy\n\nextra-substituters = https://cache.nixos.kz\n";
+      '';
       locations."~ ^/(nix-cache-info$|[a-z0-9]+\\.narinfo$|nar/)" = {
         proxyPass = "https://cache.nixos.org";
         extraConfig = ''
