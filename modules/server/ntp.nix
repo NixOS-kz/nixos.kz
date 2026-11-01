@@ -1,13 +1,21 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   flake.modules.nixos.ntp =
     {
       services.nginx.virtualHosts."ntp.nixos.kz" = {
-        forceSSL = true;
-        enableACME = true;
         root = config.flake.packages.x86_64-linux.site;
         locations."= /".tryFiles = "/ntp.html =404";
         locations."/".return = "404";
+        # Serve ACME webroot challenges so the NTS cert can be issued via baremetal proxy
+        locations."/.well-known/acme-challenge/" = {
+          root = "/var/lib/acme/acme-challenge";
+          tryFiles = "$uri =404";
+        };
+      };
+
+      security.acme = {
+        acceptTerms = lib.mkDefault true;
+        defaults.email = lib.mkDefault "webmaster@nixos.kz";
       };
 
       security.acme.certs.nts = {
