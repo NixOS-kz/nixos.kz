@@ -19,9 +19,12 @@ in
         autoFormat = true;
         neededForBoot = true;
       };
-      networking.hosts."127.0.0.1" = [ "ntp.nixos.kz" ];
       networking.hosts."127.0.0.2" = [ "cache.nixos.org" ];
-      services.chrony.extraConfig = "local stratum 10";
+      # ACME needed for the cache.nixos.org stub below
+      security.acme = {
+        acceptTerms = true;
+        defaults.email = "test@nixos.kz";
+      };
       services.nginx.virtualHosts."cache.nixos.org" = {
         listen = [{ addr = "127.0.0.2"; port = 443; ssl = true; }];
         addSSL = true;
@@ -36,7 +39,7 @@ in
         StdinNull yes
       '';
       nixos-kz.members.tester = keys.snakeOilPublicKey;
-      boot.kernel.sysctl."vm.panic_on_oom" = 0; # the test harness panics on OOM, production does not
+      boot.kernel.sysctl."vm.panic_on_oom" = 0;
       users.users.root.openssh.authorizedKeys.keys = [ "restrict ${keys.snakeOilPublicKey}" ];
     };
 
@@ -45,24 +48,16 @@ in
       server.wait_for_unit("sshd.service")
 
       ip = "127.0.0.1"
-      curl = f"curl -sk --resolve nixos.kz:443:{ip} --resolve cache.nixos.kz:443:{ip} --resolve ntp.nixos.kz:443:{ip} "
+      curl = f"curl -s --resolve nixos.kz:80:{ip} --resolve cache.nixos.kz:80:{ip} "
 
       with subtest("nginx"):
-          server.succeed(curl + "https://nixos.kz | grep -F https://t.me/NixOSkz")
-          server.succeed(curl + "https://ntp.nixos.kz | grep -F 'ntp.nixos.kz</h1>'")
-          server.succeed(curl + "https://cache.nixos.kz/nix-cache-info | grep StoreDir")
-          server.succeed(curl + "https://cache.nixos.kz/00000000000000000000000000000000.narinfo | grep StoreDir")
-          server.succeed(curl + "https://cache.nixos.kz/ | grep -F 'substituters = https://cache.nixos.kz'")
-          server.succeed(curl + "-o /dev/null -w '%{http_code}' https://cache.nixos.kz/evil | grep -x 404")
-          server.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' https://cache.nixos.kz/nix-cache-info | grep -x 403")
-          server.succeed(curl + "-I https://nixos.kz | grep -i '^strict-transport-security: max-age=31536000'")
+          server.succeed(curl + "http://nixos.kz | grep -F https://t.me/NixOSkz")
+          server.succeed(curl + "http://cache.nixos.kz/nix-cache-info | grep StoreDir")
+          server.succeed(curl + "http://cache.nixos.kz/00000000000000000000000000000000.narinfo | grep StoreDir")
+          server.succeed(curl + "http://cache.nixos.kz/ | grep -F 'substituters = https://cache.nixos.kz'")
+          server.succeed(curl + "-o /dev/null -w '%{http_code}' http://cache.nixos.kz/evil | grep -x 404")
+          server.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' http://cache.nixos.kz/nix-cache-info | grep -x 403")
           server.fail(f"curl -s -H 'Host: evil.com' http://{ip}/")
-          server.succeed(f"curl -s -o /dev/null -w '%{{redirect_url}}' -H 'Host: nixos.kz' http://{ip}/ | grep -x https://nixos.kz/")
-
-      with subtest("ntp"):
-          q = "chronyd -Q -t 30 'pidfile /run/q.pid' 'ntstrustedcerts /var/lib/acme/.minica/cert.pem' "
-          server.wait_until_succeeds(q + "'server ntp.nixos.kz iburst maxsamples 1'", timeout=120)
-          server.succeed(q + "'server ntp.nixos.kz iburst nts maxsamples 1'")
 
       with subtest("root has restricted deploy access"):
           server.succeed("ssh root@localhost 'touch /root/ok'")

@@ -24,8 +24,6 @@
       networking.interfaces.ens3.ipv4.addresses = lib.mkForce [{ address = "47.47.47.47"; prefixLength = 24; }];
       networking.defaultGateway = lib.mkForce "47.47.47.1";
 
-      security.acme.defaults.server = "https://127.0.0.1/";
-
       boot.kernelModules = [ "qemu_fw_cfg" ];
       services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
       systemd.services.vm-ssh = {

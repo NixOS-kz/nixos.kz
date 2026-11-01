@@ -2,17 +2,11 @@
 {
   flake.modules.nixos.nginx =
     {
-      security.acme = {
-        acceptTerms = true;
-        defaults.email = "webmaster@nixos.kz";
-      };
-
       services.nginx = {
         enable = true;
         serverTokens = false;
         commonHttpConfig = ''
           access_log syslog:server=unix:/dev/log;
-          add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
         '';
         proxyCachePath.narinfo = {
           enable = true;
@@ -24,18 +18,13 @@
         };
         virtualHosts."_" = {
           default = true;
-          rejectSSL = true;
           locations."/".return = "444";
         };
         virtualHosts."nixos.kz" = {
-          forceSSL = true;
-          enableACME = true;
           serverAliases = [ "www.nixos.kz" ];
           root = config.flake.packages.x86_64-linux.site;
         };
         virtualHosts."cache.nixos.kz" = {
-          forceSSL = true;
-          enableACME = true;
           locations."/".return = "404";
           root = config.flake.packages.x86_64-linux.site;
           locations."= /".tryFiles = "/cache.html =404";
@@ -72,6 +61,6 @@
         };
       };
 
-      networking.firewall.allowedTCPPorts = [ 80 443 ];
+      networking.firewall.allowedTCPPorts = [ 80 ];
     };
 }

@@ -41,10 +41,12 @@ jobs:
         run: |
           install -m 700 -d ~/.ssh
           install -m 600 <(printf '%s\n' "$KEY") ~/.ssh/id_ed25519
+          # known_hosts entry must use port format: [nixos.kz]:2026 <key-type> <key>
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
       - run: |
           if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$GITHUB_SHA" ]; then
             echo "::notice::main moved on, the newer run deploys"
             exit 0
           fi
-          nix shell --inputs-from . nixpkgs#nixos-rebuild -c nixos-rebuild switch --flake .#nixos-kz --target-host root@nixos.kz --use-substitutes
+          NIX_SSHOPTS="-p 2026" nix shell --inputs-from . nixpkgs#nixos-rebuild -c \
+            nixos-rebuild switch --flake .#nixos-kz --target-host root@nixos.kz --use-substitutes

@@ -5,4 +5,3 @@ NixOS community of Kazakhstan: [GitHub](https://github.com/NixOS-kz), [Telegram]
 ## Services
 
 - [cache.nixos.kz](https://cache.nixos.kz): cache.nixos.org proxy
-- [ntp.nixos.kz](https://ntp.nixos.kz): NTP and NTS
