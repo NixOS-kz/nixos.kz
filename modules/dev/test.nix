@@ -48,7 +48,7 @@ in
       server.wait_for_unit("sshd.service")
 
       ip = "127.0.0.1"
-      curl = f"curl -s --resolve nixos.kz:80:{ip} --resolve cache.nixos.kz:80:{ip} "
+      curl = f"curl -s --resolve nixos.kz:80:{ip} --resolve cache.nixos.kz:80:{ip} --resolve ntp.nixos.kz:80:{ip} "
 
       with subtest("nginx"):
           server.succeed(curl + "http://nixos.kz | grep -F https://t.me/NixOSkz")
@@ -58,6 +58,9 @@ in
           server.succeed(curl + "-o /dev/null -w '%{http_code}' http://cache.nixos.kz/evil | grep -x 404")
           server.succeed(curl + "-X POST -o /dev/null -w '%{http_code}' http://cache.nixos.kz/nix-cache-info | grep -x 403")
           server.fail(f"curl -s -H 'Host: evil.com' http://{ip}/")
+
+      with subtest("ntp"):
+          server.succeed(curl + "http://ntp.nixos.kz | grep -i ntp")
 
       with subtest("root has restricted deploy access"):
           server.succeed("ssh root@localhost 'touch /root/ok'")
