@@ -4,6 +4,6 @@
 
   nixpkgs.hostPlatform = "x86_64-linux";
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda";
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 }
